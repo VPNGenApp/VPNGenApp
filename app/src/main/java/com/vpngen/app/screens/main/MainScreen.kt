@@ -51,7 +51,8 @@ class MainScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val screenModel = rememberScreenModel { MainScreenModel() }
+        val context = LocalContext.current
+        val screenModel = rememberScreenModel { MainScreenModel(context) }
         val state by screenModel.state.observeAsState()
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -81,12 +82,11 @@ class MainScreen : Screen {
     private fun TopAppBar(scrollBehavior: TopAppBarScrollBehavior, screenModel: MainScreenModel) {
         var expanded by remember { mutableStateOf(false) }
 
-        val context = LocalContext.current
         val pickConfigLauncher = rememberLauncherForActivityResult(
             ActivityResultContracts.GetContent()
         ) { configUri ->
             if (configUri != null) {
-                screenModel.onConfigReceived(configUri, context)
+                screenModel.onConfigReceived(configUri)
             }
         }
 
@@ -143,10 +143,10 @@ class MainScreen : Screen {
                 .selectableGroup()
                 .verticalScroll(rememberScrollState())
         ) {
-            configs?.forEach { text ->
+            configs?.forEach { config ->
                 ConfigListItem(
-                    configName = text,
-                    selectedOption = selectedOption ?: configs!![0],
+                    configName = config.name,
+                    selectedOption = selectedOption ?: configs!![0].name,
                     onOptionSelected = { option -> screenModel.selectedConfigChanged(option) },
                     enabled = vpnState is MainScreenModel.State.Disabled
                 )

@@ -2,6 +2,7 @@ package com.vpngen.app.screens.main
 
 import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,18 +10,20 @@ import cafe.adriel.voyager.livedata.LiveScreenModel
 import com.vpngen.app.utils.config.ConfigExtractor
 import com.vpngen.app.utils.config.ConfigParser
 import com.vpngen.app.utils.config.ConfigReader
+import com.vpngen.app.utils.config.ConfigStorage
+import com.vpngen.app.utils.config.StoredConfig
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-class MainScreenModel : LiveScreenModel<MainScreenModel.State>(State.Disabled) {
+class MainScreenModel(private val context: Context) : LiveScreenModel<MainScreenModel.State>(State.Disabled) {
 
     sealed class State {
         object Disabled : State()
         object Enabled : State()
     }
 
-    private val _configs: MutableLiveData<List<String>> = MutableLiveData()
-    val configs: LiveData<List<String>> = _configs
+    private val _configs: MutableLiveData<List<StoredConfig>> = MutableLiveData()
+    val configs: LiveData<List<StoredConfig>> = _configs
 
     private val _selectedConfig: MutableLiveData<String?> = MutableLiveData()
     val selectedConfig: LiveData<String?> = _selectedConfig
@@ -28,6 +31,7 @@ class MainScreenModel : LiveScreenModel<MainScreenModel.State>(State.Disabled) {
     private val configExtractor: ConfigExtractor = ConfigExtractor()
     private val configReader: ConfigReader = ConfigReader()
     private val configParser: ConfigParser = ConfigParser()
+    private val configStorage: ConfigStorage = ConfigStorage(context)
 
     private fun enableVpn() {
         mutableState.value = State.Enabled
@@ -45,7 +49,7 @@ class MainScreenModel : LiveScreenModel<MainScreenModel.State>(State.Disabled) {
         launcher.launch("*/*")
     }
 
-    fun onConfigReceived(configUri: Uri, context: Context) {
+    fun onConfigReceived(configUri: Uri) {
         val contentResolver = context.contentResolver
 
         val stringBuilder = StringBuilder()
@@ -60,15 +64,27 @@ class MainScreenModel : LiveScreenModel<MainScreenModel.State>(State.Disabled) {
         }
 
         val configString = configExtractor.extractConnectionFromCode(stringBuilder.toString())
+        val config = configParser.deserializeConfig(configString)
+
+        val storedConfig = StoredConfig(name = config.description, value = configString)
+
+        if (_configs.value?.firstOrNull { it.name == storedConfig.name } != null) {
+            Toast.makeText(context, "Config already exists", Toast.LENGTH_LONG).show()
+            return
+        }
 
         configReader.writeConfig(
             context = context,
-            config = configString
+            config = storedConfig
         )
 
-        val config = configParser.deserializeConfig(configString)
+        saveConfig(storedConfig)
+    }
 
-        _configs.value = _configs.value?.plus(listOf("NEW"))
+    private fun saveConfig(config: StoredConfig) {
+        _configs.value = _configs.value?.plus(listOf(config))
+
+        configStorage.saveConfigs(_configs.value!!)
     }
 
     fun toggleVpn() {
@@ -79,8 +95,8 @@ class MainScreenModel : LiveScreenModel<MainScreenModel.State>(State.Disabled) {
     }
 
     init {
-        _configs.value = listOf()
+        _configs.value = configStorage.loadConfigs()
 
-        _selectedConfig.value = _configs.value?.firstOrNull()
+        _selectedConfig.value = _configs.value?.firstOrNull()?.name
     }
 }
