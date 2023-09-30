@@ -9,16 +9,16 @@ import java.util.zip.InflaterInputStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-public class ConfigParser {
+public class ConfigExtractor {
 
-    public boolean importConnectionFromCode(String code) {
+    public String extractConnectionFromCode(String code) {
         code = code.replace("vpn://", "");
         byte[] ba;
         try {
             ba = Base64.getUrlDecoder().decode(code);
         } catch (IllegalArgumentException e) {
             System.out.println("Base64 decode error: " + e.getMessage());
-            return false;
+            return "";
         }
 
         // Remove qCompress 4-byte header
@@ -50,7 +50,7 @@ public class ConfigParser {
             baUncompressed = bos.toByteArray();
         } catch (IOException e) {
             System.out.println("Decompression failed: " + e.getMessage());
-            return false;
+            return "";
         }
 
         // JSON unmarshalling
@@ -60,7 +60,7 @@ public class ConfigParser {
             o = objectMapper.readValue(baUncompressed, Map.class);
         } catch (IOException e) {
             System.out.println("JSON unmarshal error: " + e.getMessage());
-            return false;
+            return "";
         }
 
         System.out.println("Resulting JSON object: " + o);
@@ -70,12 +70,10 @@ public class ConfigParser {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
             String prettyJson = objectMapper.writeValueAsString(o);
-            System.out.println(prettyJson);
+            return prettyJson;
         } catch (IOException e) {
             System.out.println("JSON marshal error: " + e.getMessage());
-            return false;
+            return "";
         }
-
-        return true;
     }
 }
