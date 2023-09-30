@@ -45,6 +45,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.vpngen.app.screens.details.DetailsScreen
 import com.vpngen.app.ui.theme.Wifi
+import com.vpngen.app.utils.config.StoredConfig
 
 class MainScreen : Screen {
 
@@ -145,7 +146,7 @@ class MainScreen : Screen {
         ) {
             configs?.forEach { config ->
                 ConfigListItem(
-                    configName = config.name,
+                    config = config,
                     selectedOption = selectedOption ?: configs!![0].name,
                     onOptionSelected = { option -> screenModel.selectedConfigChanged(option) },
                     enabled = vpnState is MainScreenModel.State.Disabled
@@ -156,14 +157,14 @@ class MainScreen : Screen {
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    private fun ConfigListItem(configName: String, selectedOption: String, onOptionSelected: (String) -> Unit, enabled: Boolean) {
+    private fun ConfigListItem(config: StoredConfig, selectedOption: String, onOptionSelected: (String) -> Unit, enabled: Boolean) {
         val navigator = LocalNavigator.current
 
         Row(
             modifier = Modifier
                 .combinedClickable(
-                    onClick = { if (enabled) onOptionSelected(configName) },
-                    onLongClick = { navigator?.push(DetailsScreen(configName)) }
+                    onClick = { if (enabled) onOptionSelected(config.name) },
+                    onLongClick = { navigator?.push(DetailsScreen(config)) }
                 )
                 .padding(all = 8.dp)
                 .fillMaxWidth()
@@ -171,12 +172,12 @@ class MainScreen : Screen {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             RadioButton(
-                selected = (configName == selectedOption),
-                onClick = { if (enabled) onOptionSelected(configName) },
+                selected = (config.name == selectedOption),
+                onClick = { if (enabled) onOptionSelected(config.name) },
                 enabled = enabled
             )
 
-            Text(text = configName)
+            Text(text = config.name)
         }
     }
 }
