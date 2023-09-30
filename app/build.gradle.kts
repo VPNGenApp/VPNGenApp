@@ -50,11 +50,13 @@ android {
 
 dependencies {
 
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation(project(":openvpn"))
+
     val voyagerVersion = "1.0.0-rc05"
     val lifecycleVersion = "2.6.2"
     val jacksonVersion = "2.10.1"
 
+    implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.activity:activity-compose:1.7.2")

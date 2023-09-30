@@ -1,6 +1,7 @@
 package com.vpngen.app.screens.main
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
@@ -12,6 +13,8 @@ import com.vpngen.app.utils.config.ConfigParser
 import com.vpngen.app.utils.config.ConfigReader
 import com.vpngen.app.utils.config.ConfigStorage
 import com.vpngen.app.utils.config.StoredConfig
+import de.blinkt.openvpn.VpnProfile
+import de.blinkt.openvpn.core.ProfileManager
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -35,6 +38,12 @@ class MainScreenModel(private val context: Context) : LiveScreenModel<MainScreen
 
     private fun enableVpn() {
         mutableState.value = State.Enabled
+
+        context.startActivity(
+            Intent(context, Class.forName("de.blinkt.openvpn.LaunchVPN")).apply {
+                putExtra("de.blinkt.openvpn.api.profileName", selectedConfig.value!!)
+            }
+        )
     }
 
     private fun disableVpn() {
@@ -83,6 +92,8 @@ class MainScreenModel(private val context: Context) : LiveScreenModel<MainScreen
 
     private fun saveConfig(config: StoredConfig) {
         _configs.value = _configs.value?.plus(listOf(config))
+
+        ProfileManager.saveProfile(context, VpnProfile(config.name))
 
         configStorage.saveConfigs(_configs.value!!)
     }

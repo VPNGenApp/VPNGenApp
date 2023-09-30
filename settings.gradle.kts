@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "VPN Gen App"
 include(":app")
+include(":openvpn")
