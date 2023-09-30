@@ -1,0 +1,91 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  msvc:
+    strategy:
+      matrix:
+        arch: [x86, amd64, amd64_arm64]
+
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      BUILD_CONFIGURATION: Release
+
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: lukka/get-cmake@latest
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.arch }}
+
+    - name: Restore from cache and install vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '8b04a7bd93bef991818fc372bb83ce00ec1c1c16'
+        vcpkgJsonGlob: '**/windows/vcpkg.json'
+
+    - name: Run CMake with vcpkg.json manifest
+      uses: lukka/run-cmake@v10
+      if: ${{ matrix.arch != 'amd64_arm64' }}
+      with:
+        configurePreset: win-${{ matrix.arch }}-release
+        buildPreset: win-${{ matrix.arch }}-release
+        testPreset: win-${{ matrix.arch }}-release
+
+    - name: Run CMake with vcpkg.json manifest (NO TESTS)
+      uses: lukka/run-cmake@v10
+      if: ${{ matrix.arch == 'amd64_arm64' }}
+      with:
+        configurePreset: win-${{ matrix.arch }}-release
+        buildPreset: win-${{ matrix.arch }}-release
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: openvpn3-msvc-${{ matrix.arch }}
+        path: |
+            ${{ github.workspace }}/build/**/*.exe
+            ${{ github.workspace }}/build/**/*.dll
+            !${{ github.workspace }}/build/**/test/ssl/**
+            !${{ github.workspace }}/build/**/test/unittests/**
+            !${{ github.workspace }}/build/**/CMakeFiles/**
+            !${{ github.workspace }}/build/**/vcpkg_installed/**
+  mingw:
+    strategy:
+      matrix:
+        arch: [x86, x64]
+
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: lukka/get-cmake@latest
+
+    - name: Install dependencies
+      run: sudo apt update && sudo apt install -y mingw-w64 unzip cmake build-essential
+
+    - name: Restore from cache and install vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '8b04a7bd93bef991818fc372bb83ce00ec1c1c16'
+        vcpkgJsonGlob: '**/mingw/vcpkg.json'
+
+    - name: Run CMake with vcpkg.json manifest
+      uses: lukka/run-cmake@v10
+      with:
+        configurePreset: mingw-${{ matrix.arch }}-release
+        buildPreset: mingw-${{ matrix.arch }}-release
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: openvpn3-mingw-${{ matrix.arch }}
+        path: |
+            ${{ github.workspace }}/build/**/*.exe
+            ${{ github.workspace }}/build/**/*.dll
+            !${{ github.workspace }}/build/**/test/ssl/**
+            !${{ github.workspace }}/build/**/test/unittests/**
+            !${{ github.workspace }}/build/**/CMakeFiles/**
+            !${{ github.workspace }}/build/**/vcpkg_installed/**
