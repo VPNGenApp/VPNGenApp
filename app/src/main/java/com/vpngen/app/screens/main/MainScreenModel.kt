@@ -14,7 +14,6 @@ import com.vpngen.app.utils.config.ConfigReader
 import com.vpngen.app.utils.config.ConfigStorage
 import com.vpngen.app.utils.config.StoredConfig
 import de.blinkt.openvpn.activities.ConfigConverter
-import de.blinkt.openvpn.fragments.VPNProfileList
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -43,7 +42,7 @@ class MainScreenModel(private val context: Context) : LiveScreenModel<MainScreen
             Intent(context, Class.forName("de.blinkt.openvpn.LaunchVPN")).apply {
                 action = Intent.ACTION_MAIN
                 //putExtra("de.blinkt.openvpn.shortcutProfileName", selectedConfig.value!!)
-                putExtra("de.blinkt.openvpn.shortcutProfileUUID", "a0b1e0ee-7b0c-466b-b572-6fccabeea842")
+                putExtra("de.blinkt.openvpn.shortcutProfileUUID", "180ddbe4-83a5-41cf-827b-342288744aa5")
             }
         )
     }

@@ -1,5 +1,3 @@
-import com.android.build.gradle.api.ApplicationVariant
-
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
@@ -30,7 +28,8 @@ android {
     sourceSets {
         getByName("main") {
             assets.srcDirs("src/main/assets", "build/ovpnassets")
-
+            jniLibs.srcDirs("libs")
+            jni.srcDirs()
         }
     }
 
