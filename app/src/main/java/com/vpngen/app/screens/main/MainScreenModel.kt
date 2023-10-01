@@ -13,8 +13,8 @@ import com.vpngen.app.utils.config.ConfigParser
 import com.vpngen.app.utils.config.ConfigReader
 import com.vpngen.app.utils.config.ConfigStorage
 import com.vpngen.app.utils.config.StoredConfig
-import de.blinkt.openvpn.VpnProfile
-import de.blinkt.openvpn.core.ProfileManager
+import de.blinkt.openvpn.activities.ConfigConverter
+import de.blinkt.openvpn.fragments.VPNProfileList
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -41,7 +41,9 @@ class MainScreenModel(private val context: Context) : LiveScreenModel<MainScreen
 
         context.startActivity(
             Intent(context, Class.forName("de.blinkt.openvpn.LaunchVPN")).apply {
-                putExtra("de.blinkt.openvpn.api.profileName", selectedConfig.value!!)
+                action = Intent.ACTION_MAIN
+                //putExtra("de.blinkt.openvpn.shortcutProfileName", selectedConfig.value!!)
+                putExtra("de.blinkt.openvpn.shortcutProfileUUID", "fb4418c4-830b-4484-a277-62d75439d0db")
             }
         )
     }
@@ -59,6 +61,13 @@ class MainScreenModel(private val context: Context) : LiveScreenModel<MainScreen
     }
 
     fun onConfigReceived(configUri: Uri) {
+        val startImport = Intent(context, ConfigConverter::class.java)
+        startImport.action = ConfigConverter.IMPORT_PROFILE
+        startImport.data = configUri
+        context.startActivity(startImport)
+
+        return
+
         val contentResolver = context.contentResolver
 
         val stringBuilder = StringBuilder()
@@ -92,8 +101,6 @@ class MainScreenModel(private val context: Context) : LiveScreenModel<MainScreen
 
     private fun saveConfig(config: StoredConfig) {
         _configs.value = _configs.value?.plus(listOf(config))
-
-        ProfileManager.saveProfile(context, VpnProfile(config.name))
 
         configStorage.saveConfigs(_configs.value!!)
     }
