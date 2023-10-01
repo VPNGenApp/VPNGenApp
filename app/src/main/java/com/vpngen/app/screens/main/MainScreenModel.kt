@@ -43,13 +43,17 @@ class MainScreenModel(private val context: Context) : LiveScreenModel<MainScreen
             Intent(context, Class.forName("de.blinkt.openvpn.LaunchVPN")).apply {
                 action = Intent.ACTION_MAIN
                 //putExtra("de.blinkt.openvpn.shortcutProfileName", selectedConfig.value!!)
-                putExtra("de.blinkt.openvpn.shortcutProfileUUID", "fb4418c4-830b-4484-a277-62d75439d0db")
+                putExtra("de.blinkt.openvpn.shortcutProfileUUID", "a0b1e0ee-7b0c-466b-b572-6fccabeea842")
             }
         )
     }
 
     private fun disableVpn() {
         mutableState.value = State.Disabled
+
+        context.startActivity(
+            Intent(context, Class.forName("de.blinkt.openvpn.activities.DisconnectVPN"))
+        )
     }
 
     fun selectedConfigChanged(selectedConfig: String) {
@@ -65,8 +69,6 @@ class MainScreenModel(private val context: Context) : LiveScreenModel<MainScreen
         startImport.action = ConfigConverter.IMPORT_PROFILE
         startImport.data = configUri
         context.startActivity(startImport)
-
-        return
 
         val contentResolver = context.contentResolver
 

@@ -1,17 +1,43 @@
+import com.android.build.gradle.api.ApplicationVariant
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
 }
 
 android {
+    buildToolsVersion = "33.0.1"
+    buildFeatures {
+        aidl = true
+    }
     namespace = "de.blinkt.openvpn"
-    compileSdk = 33
+    compileSdk = 34
+    //compileSdkPreview = "UpsideDownCake"
+
+    // Also update runcoverity.sh
+    ndkVersion = "25.2.9519653"
 
     defaultConfig {
-        minSdk = 26
+        minSdk = 21
+        targetSdk = 34
+        //targetSdkPreview = "UpsideDownCake"
+        externalNativeBuild {
+            cmake {
+            }
+        }
+    }
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
+    sourceSets {
+        getByName("main") {
+            assets.srcDirs("src/main/assets", "build/ovpnassets")
+
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = File("${projectDir}/src/main/cpp/CMakeLists.txt")
+        }
     }
 
     buildTypes {
@@ -21,14 +47,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
-    }
-    buildFeatures {
-        aidl = true
+        jvmTarget = "17"
     }
     splits {
         abi {
