@@ -16,6 +16,8 @@ import com.vpngen.app.utils.config.StoredConfig
 import de.blinkt.openvpn.activities.ConfigConverter
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import android.util.Log
+import cloak.Cloak
 
 class MainScreenModel(private val context: Context) : LiveScreenModel<MainScreenModel.State>(State.Disabled) {
 
@@ -41,10 +43,14 @@ class MainScreenModel(private val context: Context) : LiveScreenModel<MainScreen
         context.startActivity(
             Intent(context, Class.forName("de.blinkt.openvpn.LaunchVPN")).apply {
                 action = Intent.ACTION_MAIN
-                //putExtra("de.blinkt.openvpn.shortcutProfileName", selectedConfig.value!!)
-                putExtra("de.blinkt.openvpn.shortcutProfileUUID", "180ddbe4-83a5-41cf-827b-342288744aa5")
+                putExtra("de.blinkt.openvpn.shortcutProfileName", selectedConfig.value!!)
+                //putExtra("de.blinkt.openvpn.shortcutProfileUUID", "180ddbe4-83a5-41cf-827b-342288744aa5")
             }
         )
+        Log.d("VpnGenApp","de.blinkt.openvpn.LaunchVPN executed")
+        Cloak.setArgsAndRun("-c BrowserSig=chrome;EncryptionMethod=aes-gcm;NumConn=1;ProxyMethod=openvpn;PublicKey=rp2IbuuA71izniRyRjw/RLILr7vKZj5T/Jn5xdlkCmg=;RemoteHost=194.87.122.21;RemotePort=443;ServerName=sportmail.ru;StreamTimeout=300;Transport=direct;UID=gy6wOM0qSMmZHwYEi9FooA==;localPort=1194")
+        Log.d("VpnGenApp","Cloak.main() executed")
+
     }
 
     private fun disableVpn() {

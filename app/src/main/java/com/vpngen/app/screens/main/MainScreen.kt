@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
@@ -50,6 +51,7 @@ import com.vpngen.app.utils.config.StoredConfig
 class MainScreen : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
+    @Preview
     @Composable
     override fun Content() {
         val context = LocalContext.current
